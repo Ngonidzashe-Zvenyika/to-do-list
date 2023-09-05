@@ -56,6 +56,36 @@ nav button:hover {
     background-color: yellow;
 }
 
+#folder-container {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    padding: 10px;
+    background-color: blue;
+}
+
+#folder-container-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+h2 {
+    font-size: 2.4rem;
+}
+
+.new-task {
+    outline: none;
+    appearance: none;
+    border: none;
+    width: 28px;
+    border-radius: 50%;
+}
+
+.new-task:hover {
+    cursor: pointer;
+    background-color: silver;
+}
+
 footer {
     text-align: center;
 }
