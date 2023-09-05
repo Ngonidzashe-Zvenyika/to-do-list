@@ -1,0 +1,61 @@
+:root {
+    font-size: 62.5%; 
+}
+
+*, ::before, ::after {
+    font-family: Arial, sans-serif, system-ui, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.6rem;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    width: 720px;
+    min-height: 100vh;
+    min-height: 100svh;
+    margin: auto;
+}
+
+header {
+    padding: 20px;
+    background-color: grey;
+}
+
+h1 {
+    font-size: 3.2rem;
+}
+
+main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+}
+
+nav {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    padding: 5px;
+    background-color: red;
+}
+
+nav button {
+    outline: none;
+    appearance: none;
+    border: none;
+    text-align: left;
+    padding: 5px;
+    background-color: white;
+}
+
+nav button:hover {
+    cursor: pointer;
+    background-color: yellow;
+}
+
+footer {
+    text-align: center;
+}
