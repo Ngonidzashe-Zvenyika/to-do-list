@@ -4,7 +4,7 @@ class Task {
         this.priority = priority;
         this.due = due;
         this.notes = notes;
-        this.completed = false;
+        this.status = false;
         this.folder = folderName;
     }
 }
@@ -27,7 +27,7 @@ class Project extends Task {
         }
         this.tasks.splice(index, 1);
     }
-    editTask = (taskName, priority, due, notes, completed) => {
+    editTask = (taskName, priority, due, notes, status) => {
         const index = this.tasks.findIndex(task => task.name === taskName);
         if (index === -1) {
             console.log("Task not found");
@@ -37,7 +37,7 @@ class Project extends Task {
         if (priority) this.tasks[index].priority = priority;
         if (due) this.tasks[index].due = due;
         if (notes) this.tasks[index].notes = notes;
-        if (completed) (this.tasks[index].completed) = (this.tasks[index].completed) === false ? true : false;
+        if (status) (this.tasks[index].status) = (this.tasks[index].status) === false ? true : false;
     }
 }
 
@@ -87,7 +87,7 @@ export default class Folder {
         }
         this.folderProjects[index].removeTask(taskName);
     }
-    editFolderTask = (taskName, priority, due, notes, completed) => {
+    editFolderTask = (taskName, priority, due, notes, status) => {
         const index = this.folderTasks.findIndex(task => task.name === taskName);
         if (index === -1) {
             console.log("Task not found");
@@ -97,9 +97,9 @@ export default class Folder {
         if (priority) this.folderTasks[index].priority = priority;
         if (due) this.folderTasks[index].due = due;
         if (notes) this.folderTasks[index].notes = notes;
-        if (completed) (this.folderTasks[index].completed) = (this.folderTasks[index].completed) === false ? true : false;
+        if (status) (this.folderTasks[index].status) = (this.folderTasks[index].status) === false ? true : false;
     }
-    editProject = (projectName, priority, due, notes, completed) => {
+    editProject = (projectName, priority, due, notes, status) => {
         const index = this.folderProjects.findIndex(project => project.name === projectName);
         if (index === -1) {
             console.log("Project not found");
@@ -109,15 +109,15 @@ export default class Folder {
         if (priority) this.folderProjects[index].priority = priority;
         if (due) this.folderProjects[index].due = due;
         if (notes) this.folderProjects[index].notes = notes;
-        if (completed) (this.folderProjects[index].completed) = (this.folderProjects[index].completed) === false ? true : false;
+        if (status) (this.folderProjects[index].status) = (this.folderProjects[index].status) === false ? true : false;
     }
-    editProjectTask = (projectName, taskName, priority, due, notes, completed) => {
+    editProjectTask = (projectName, taskName, priority, due, notes, status) => {
         const index = this.folderProjects.findIndex(project => project.name === projectName);
         if (index === -1) {
             console.log("Project not found");
             return;
         }
-        this.folderProjects[index].editTask(taskName, priority, due, notes, completed);
+        this.folderProjects[index].editTask(taskName, priority, due, notes, status);
     }
 }
 
