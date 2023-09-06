@@ -10,8 +10,8 @@ class Task {
 }
 
 class Project extends Task {
-    constructor (projectName, priority, due, notes) {
-        super(projectName, priority, due, notes);
+    constructor (folderName, projectName, priority, due, notes) {
+        super(folderName, projectName, priority, due, notes);
         this.tasks = [];
     }
     addTask = (folderName, taskName, priority, due, notes) => {
