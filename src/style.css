@@ -147,7 +147,7 @@ form #submit-button:hover {
     opacity: 0.8;
 }
 
-.project-element {
+.container-element {
     width: 100%;
     display: grid;
     grid-template-columns: 5px auto 1fr auto auto auto auto;

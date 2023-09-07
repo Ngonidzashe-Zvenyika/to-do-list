@@ -9,6 +9,7 @@ function renderApplication(folders) {
 }
 
 function renderFolderButtons(folders) {
+    renderFolder(folders[0]);
     for (const folder of folders) {
         const nav = document.querySelector("nav");
         const button = document.createElement("button");
@@ -44,72 +45,14 @@ function renderFolder(folder) {
         header.appendChild(renderNewTaskButton());
     }
     renderHeader();
-    const projects = folder.folderProjects;
-    renderFolderProjects(projects);
+    renderFolderContents(folder);
 }
 
-function renderForm(folder) {
-    const displayOverlay = () => {
-        const overlay = document.getElementById("overlay");
-        overlay.style.display = "block";
-    }
-    const dismissOverlay = () => {
-        const overlay = document.getElementById("overlay");
-        overlay.style.display = "none";
-    }
-    const displayForm = () => {
-        const form = document.querySelector("form");
-        form.style.display = "grid";
-        const dismissButton = document.getElementById("dismiss-button");
-        dismissButton.addEventListener("click", () => {
-            dismissOverlay();
-            dismissForm();
-        });
-        const submitButton = document.getElementById("submit-button");
-        submitButton.addEventListener("click", (event) => {
-            submitForm(event);
-        });
-    }
-    const dismissForm = () => {
-        const form = document.querySelector("form");
-        form.reset();
-        form.style.display = "none";
-    }
-    const submitForm = (event) => {
-        const taskName = document.getElementById("task-name").value;
-        const taskPriority = document.getElementById("task-priority").value;
-        const taskDue = document.getElementById("task-due").value;
-        const taskNotes = document.getElementById("task-notes").value;
-        const taskType = document.getElementById("task-type").value;
-        if (taskName && taskPriority && taskDue && taskType) {
-            event.preventDefault();
-            addTask(folder, taskName, taskPriority, taskDue, taskNotes, taskType);
-            dismissOverlay();
-            dismissForm();
-        }
-    }
-    displayOverlay();
-    displayForm();
-}
-
-function addTask(folder, taskName, taskPriority, taskDue, taskNotes, taskType) {
-    switch(taskType) {
-        case "Standard Task":
-            folder.addFolderTask(taskName, taskPriority, taskDue, taskNotes);
-            break;
-        case "Project":
-            folder.addProject(taskName, taskPriority, taskDue, taskNotes);
-            const projects = folder.folderProjects;
-            renderFolderProjects(projects);
-            break;
-    }
-}
-
-function renderFolderProjects(projects) {
-    const renderElementContainer = () => {
-        const projectElement = document.createElement("div");
-        projectElement.classList.add("project-element");
-        return projectElement;
+function renderFolderContents(folder) {
+    const renderContainerElement = () => {
+        const containerElement = document.createElement("div");
+        containerElement.classList.add("container-element");
+        return containerElement;
     }
     const renderPriorityElement = (priority) => {
         const priorityElement = document.createElement("div"); 
@@ -167,22 +110,108 @@ function renderFolderProjects(projects) {
         deleteIcon.alt = "Delete task";
         return deleteIcon;
     }
+    const renderProjectsHeading = () => {
+        const heading = document.createElement("h3");
+        heading.innerText = "Projects";
+        return heading;
+    }
     const renderProjectElements = () => {
+        const projects = folder.folderProjects;
         const projectContainer = document.getElementById("project-container");
         projectContainer.replaceChildren();
+        if (projects.length >= 1) projectContainer.appendChild(renderProjectsHeading());
         for (const project of projects) {
-            const elementContainer = renderElementContainer();
-            elementContainer.appendChild(renderPriorityElement(project.priority));
-            elementContainer.appendChild(renderCheckboxElement(project.status));
-            elementContainer.appendChild(renderNameElement(project.name));
-            elementContainer.appendChild(renderDetailsButton());
-            elementContainer.appendChild(renderDueDateElement(project.due));
-            elementContainer.appendChild(renderEditIcon());
-            elementContainer.appendChild(renderDeleteIcon());
-            projectContainer.appendChild(elementContainer);
+            const containerElement = renderContainerElement();
+            containerElement.appendChild(renderPriorityElement(project.priority));
+            containerElement.appendChild(renderCheckboxElement(project.status));
+            containerElement.appendChild(renderNameElement(project.name));
+            containerElement.appendChild(renderDetailsButton());
+            containerElement.appendChild(renderDueDateElement(project.due));
+            containerElement.appendChild(renderEditIcon());
+            containerElement.appendChild(renderDeleteIcon());
+            projectContainer.appendChild(containerElement);
+        }
+    }
+    const renderTasksHeading = () => {
+        const heading = document.createElement("h3");
+        heading.innerText = "Tasks";
+        return heading;
+    }
+    const renderStandardTaskElements = () => {
+        const tasks = folder.folderTasks;
+        const taskContainer = document.getElementById("task-container");
+        taskContainer.replaceChildren();
+        if (tasks.length >= 1) taskContainer.appendChild(renderTasksHeading());
+        for (const task of tasks) {
+            const containerElement = renderContainerElement();
+            containerElement.appendChild(renderPriorityElement(task.priority));
+            containerElement.appendChild(renderCheckboxElement(task.status));
+            containerElement.appendChild(renderNameElement(task.name));
+            containerElement.appendChild(renderDetailsButton());
+            containerElement.appendChild(renderDueDateElement(task.due));
+            containerElement.appendChild(renderEditIcon());
+            containerElement.appendChild(renderDeleteIcon());
+            taskContainer.appendChild(containerElement);
         }
     }
     renderProjectElements();
+    renderStandardTaskElements();
+}
+
+function renderForm(folder) {
+    const displayOverlay = () => {
+        const overlay = document.getElementById("overlay");
+        overlay.style.display = "block";
+    }
+    const dismissOverlay = () => {
+        const overlay = document.getElementById("overlay");
+        overlay.style.display = "none";
+    }
+    const displayForm = () => {
+        const form = document.querySelector("form");
+        form.style.display = "grid";
+        const dismissButton = document.getElementById("dismiss-button");
+        dismissButton.addEventListener("click", () => {
+            dismissOverlay();
+            dismissForm();
+        });
+        const submitButton = document.getElementById("submit-button");
+        submitButton.addEventListener("click", (event) => {
+            submitForm(event);
+        });
+    }
+    const dismissForm = () => {
+        const form = document.querySelector("form");
+        form.reset();
+        form.style.display = "none";
+    }
+    const submitForm = (event) => {
+        const taskName = document.getElementById("task-name").value;
+        const taskPriority = document.getElementById("task-priority").value;
+        const taskDue = document.getElementById("task-due").value;
+        const taskNotes = document.getElementById("task-notes").value;
+        const taskType = document.getElementById("task-type").value;
+        if (taskName && taskPriority && taskDue && taskType) {
+            event.preventDefault();
+            addTask(folder, taskName, taskPriority, taskDue, taskNotes, taskType);
+            renderFolderContents(folder);
+            dismissOverlay();
+            dismissForm();
+        }
+    }
+    displayOverlay();
+    displayForm();
+}
+
+function addTask(folder, taskName, taskPriority, taskDue, taskNotes, taskType) {
+    switch(taskType) {
+        case "Standard Task":
+            folder.addFolderTask(taskName, taskPriority, taskDue, taskNotes);
+            break;
+        case "Project":
+            folder.addProject(taskName, taskPriority, taskDue, taskNotes);
+            break;
+    }
 }
 
 
