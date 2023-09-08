@@ -7,6 +7,9 @@ class Task {
         this.status = false;
         this.folder = folderName;
     }
+    toggleTaskStatus = () => {
+        this.status = (this.status === true) ? false : true;
+    }
 }
 
 class Project extends Task {
