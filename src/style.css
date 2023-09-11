@@ -194,7 +194,12 @@ form .submit-form:hover {
     background-color: white;
 }
 
+.details h2 {
+    font-size: 2.4rem;
+}
+
 .details .dismiss-details {
+    align-self: start;
     position: sticky;
     top: 0px;
     outline: none;

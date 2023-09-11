@@ -27,7 +27,7 @@ const folderComponents = (() => {
         button.type = "button";
         button.addEventListener("click", () => {
             formComponents.newItemInFolder(folder);
-        });
+        })
         return button;
     }
     const header = (folder) => {
@@ -115,7 +115,9 @@ const itemComponents = (() => {
         icon.src = editImage;
         icon.alt = "Edit details";
         icon.addEventListener("click", () => {
-            formComponents.editItemInFolder(folder, item);
+            if (item.status === true) {
+                //
+            } else formComponents.editItemInFolder(folder, item);
         })
         return icon;
     }
@@ -125,15 +127,43 @@ const itemComponents = (() => {
         icon.src = editImage;
         icon.alt = "Edit details";
         icon.addEventListener("click", () => {
-            formComponents.editTaskInProject(project, task);
+            if (task.status === true) {
+                //
+            } else formComponents.editTaskInProject(project, task);
         })
         return icon;
     }
-    const iconDeleteItemInFolder = () => {
+    const iconDeleteTaskInFolder = (folder, taskName) => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = deleteImage;
         icon.alt = "Delete task";
+        icon.addEventListener("click", () => {
+            folder.removeTask(taskName);
+            folderComponents.displayFolder(folder);
+        })
+        return icon;
+    }
+    const iconDeleteProjectInFolder = (folder, projectName) => {
+        const icon = document.createElement("img");
+        icon.classList.add("icon");
+        icon.src = deleteImage;
+        icon.alt = "Delete task";
+        icon.addEventListener("click", () => {
+            folder.removeProject(projectName);
+            folderComponents.displayFolder(folder);
+        })
+        return icon;
+    }
+    const iconDeleteTaskInProject = (project, taskName) => {
+        const icon = document.createElement("img");
+        icon.classList.add("icon");
+        icon.src = deleteImage;
+        icon.alt = "Delete task";
+        icon.addEventListener("click", () => {
+            project.removeTask(taskName);
+            detailsComponents.updateProjectDetails(project);
+        })
         return icon;
     }
     const headingTasks = () => {
@@ -178,7 +208,7 @@ const itemComponents = (() => {
         button.type = "button";
         button.addEventListener("click", () => {
             formComponents.newTaskInProject(project);
-        });
+        })
         return button;
     }
     const renderTasksInFolder = (folder, tasks) => {
@@ -194,7 +224,7 @@ const itemComponents = (() => {
             element.appendChild(buttonTaskDetails(task));
             element.appendChild(due(task.due));
             element.appendChild(iconEditItemInFolder(folder, task));
-            element.appendChild(iconDeleteItemInFolder());
+            element.appendChild(iconDeleteTaskInFolder(folder, task.name));
             container.appendChild(element);
         }
         return container;
@@ -212,7 +242,7 @@ const itemComponents = (() => {
             element.appendChild(buttonProjectDetails(project));
             element.appendChild(due(project.due));
             element.appendChild(iconEditItemInFolder(folder, project));
-            element.appendChild(iconDeleteItemInFolder());
+            element.appendChild(iconDeleteProjectInFolder(folder, project.name));
             container.appendChild(element);
         }
         return container;
@@ -230,7 +260,7 @@ const itemComponents = (() => {
             element.appendChild(buttonTaskDetails(task));
             element.appendChild(due(task.due));
             element.appendChild(iconEditTaskInProject(project, task));
-            element.appendChild(iconDeleteItemInFolder());
+            element.appendChild(iconDeleteTaskInProject(project, task.name));
             container.appendChild(element);
         }
         return container;
@@ -259,7 +289,7 @@ const formComponents = (() => {
         button.setAttribute("type", "button");
         button.addEventListener("click", () => {
             dismissForm();
-        });
+        })
         const container = document.querySelector(".button-container");
         container.appendChild(button);
     }
@@ -277,7 +307,7 @@ const formComponents = (() => {
             addToFolder(folder, event);
             dismissForm();
             folderComponents.displayFolder(folder);
-        });
+        })
         const form = document.querySelector("form");
         form.appendChild(button);
     }
@@ -290,7 +320,7 @@ const formComponents = (() => {
             addToProject(project, event);
             dismissForm();
             detailsComponents.updateProjectDetails(project);
-        });
+        })
         const form = document.querySelector("form");
         form.appendChild(button);
     }
@@ -303,7 +333,7 @@ const formComponents = (() => {
             editItem(item, event);
             dismissForm();
             folderComponents.displayFolder(folder);
-        });
+        })
         const form = document.querySelector("form");
         form.appendChild(button);
     }
@@ -316,7 +346,7 @@ const formComponents = (() => {
             editItem(task, event);
             dismissForm();
             detailsComponents.updateProjectDetails(project);
-        });
+        })
         const form = document.querySelector("form");
         form.appendChild(button);
     }
@@ -447,7 +477,7 @@ const detailsComponents = (() => {
         button.innerText = "✖";
         button.addEventListener("click", () => {
             dismissDetails(details);
-        });
+        })
         return button;
     }
     const dismissDetails = (details) => {
