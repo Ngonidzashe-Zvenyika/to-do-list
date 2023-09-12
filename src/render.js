@@ -305,8 +305,6 @@ const formComponents = (() => {
         button.setAttribute("type", "submit");
         button.addEventListener("click", (event) => {
             addToFolder(folder, event);
-            dismissForm();
-            folderComponents.displayFolder(folder);
         })
         const form = document.querySelector("form");
         form.appendChild(button);
@@ -318,8 +316,6 @@ const formComponents = (() => {
         button.setAttribute("type", "submit");
         button.addEventListener("click", (event) => {
             addToProject(project, event);
-            dismissForm();
-            detailsComponents.updateProjectDetails(project);
         })
         const form = document.querySelector("form");
         form.appendChild(button);
@@ -343,9 +339,7 @@ const formComponents = (() => {
         button.innerText = "Submit";
         button.setAttribute("type", "submit");
         button.addEventListener("click", (event) => {
-            editItem(task, event);
-            dismissForm();
-            detailsComponents.updateProjectDetails(project);
+            editTask(project, task, event);
         })
         const form = document.querySelector("form");
         form.appendChild(button);
@@ -371,6 +365,8 @@ const formComponents = (() => {
                     folder.addProject(name, priority, due, notes);
                     break;
             }
+            folderComponents.displayFolder(folder);
+            dismissForm();
         }
     }
     const addToProject = (project, event) => {
@@ -381,6 +377,8 @@ const formComponents = (() => {
         if (taskName && taskPriority && taskDue) {
             event.preventDefault();
             project.addTask(project.folder, taskName, taskPriority, taskDue, taskNotes);
+            detailsComponents.updateProjectDetails(project);
+            dismissForm();
         }
     }
     const editItem = (item, event) => {
@@ -393,21 +391,40 @@ const formComponents = (() => {
             item.editDetails(name, priority, due, notes);
         }
     }
+    const editTask = (project, task, event) => {
+        const name = document.getElementById("input-name").value;
+        const priority = document.getElementById("input-priority").value;
+        const due = document.getElementById("input-due").value;
+        const notes = document.getElementById("input-notes").value;
+        if (name && priority && due) {
+            event.preventDefault();
+            task.editDetails(name, priority, due, notes);
+            detailsComponents.updateProjectDetails(project);
+            dismissForm();
+        }
+    }
+    const addType = () => {
+        const container = document.querySelector(".input-type-container");
+        container.style.display = "grid";
+        const type = document.getElementById("input-type");
+        type.setAttribute("required", "true");
+    }
+    const removeType = () => {
+        const container = document.querySelector(".input-type-container");
+        container.style.display = "none";
+        const type = document.getElementById("input-type");
+        type.removeAttribute("required");
+    }
     const newItemInFolder = (folder) => {
-        const taskType = document.querySelector(".input-type-container");
-        taskType.style.display = "grid";
+        addType();
         displayOverlay();
         buttonDismiss();
         buttonNewItemInFolder(folder);
         const form = document.querySelector("form");
         form.style.display = "grid";
     }
-    const hideTaskType = () => {
-        const taskType = document.querySelector(".input-type-container");
-        taskType.style.display = "none";
-    }
     const newTaskInProject = (project) => {
-        hideTaskType();
+        removeType();
         displayOverlay();
         buttonDismiss();
         buttonNewTaskInProject(project);
@@ -416,7 +433,7 @@ const formComponents = (() => {
     }
     const editItemInFolder = (folder, item) => {
         buttonDismiss();
-        hideTaskType();
+        removeType();
         const name = document.getElementById("input-name");
         name.value = item.name;
         const priority = document.getElementById("input-priority");
@@ -432,7 +449,7 @@ const formComponents = (() => {
     }
     const editTaskInProject = (project, task) => {
         buttonDismiss();
-        hideTaskType();
+        removeType();
         const name = document.getElementById("input-name");
         name.value = task.name;
         const priority = document.getElementById("input-priority");
