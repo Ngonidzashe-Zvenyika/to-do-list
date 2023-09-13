@@ -1,6 +1,6 @@
 class Task {
-    constructor (folderName, taskName, priority, due, notes) {
-        this.name = taskName;
+    constructor (folderName, name, priority, due, notes) {
+        this.name = name;
         this.priority = priority;
         this.due = due;
         this.notes = notes;
@@ -10,65 +10,134 @@ class Task {
     toggleStatus = () => {
         this.status = (this.status === true) ? false : true;
     }
-    editDetails = (name, priority, due, notes) => {
-        if (name) this.name = name;
-        if (priority) this.priority = priority;
-        if (due) this.due = due;
-        if (notes) this.notes = notes;
+    editDetails = (parent, name, priority, due, notes) => {
+        if (this.status === true) {
+            return "You may not edit a completed task.";
+        } else if (!(parent.tasks.some(task => task.name === name && task !== this))) {
+            this.name = name;
+            this.priority = priority;
+            this.due = due;
+            this.notes = notes;
+        } else if ("folder" in parent) {
+            return "A task with this name already exists in this project.";
+        } else return "A task with this name already exists in the current folder.";
     }
 }
 
-class Project extends Task {
-    constructor (folderName, projectName, priority, due, notes) {
-        super(folderName, projectName, priority, due, notes);
+class Project {
+    constructor (folderName, name, priority, due, notes) {
+        this.name = name;
+        this.priority = priority;
+        this.due = due;
+        this.notes = notes;
+        this.status = false;
+        this.folder = folderName;
         this.tasks = [];
     }
-    addTask = (folderName, taskName, priority, due, notes) => {
-        if (!(this.tasks.some(task => task.name === taskName))) {
-            this.tasks.push(new Task(folderName, taskName, priority, due, notes));
-        } else console.log("task exists in project");
+    toggleStatus = () => {
+        const complete = this.tasks.every(task => task.status === true);
+        if (complete && this.status === false) {
+            this.status = true;
+        } else if (this.status === true) {
+            this.status = false;
+        } else return "This project contains incomplete tasks and may not be checked off.";
     }
-    removeTask = (taskName) => {
-        const index = this.tasks.findIndex(task => task.name === taskName);
+    editDetails = (folder, name, priority, due, notes) => {
+        if (this.status === true) {
+            return "You may not edit a completed project.";
+        } else if (!(folder.projects.some(project => project.name === name && project !== this))) {
+            this.name = name;
+            this.priority = priority;
+            this.due = due;
+            this.notes = notes;
+        } else return "A project with this name already exists in the current folder.";
+    }
+    addTask = (folderName, name, priority, due, notes) => {
+        if (!(this.tasks.some(task => task.name === name))) {
+            this.tasks.push(new Task(folderName, name, priority, due, notes));
+        } else return "A task with this name already exists in the current project.";
+    }
+    removeTask = (task) => {
+        const index = this.tasks.findIndex(child => child === task);
         if (index === -1) {
-            console.log("Task not found");
-            return;
+            return "This task does not exist in the current project.";
         }
         this.tasks.splice(index, 1);
     }
 }
 
-export default class Folder {
+const Folder = class {
     constructor (folderName) {
         this.folderName = folderName;
-        this.folderTasks = [];
-        this.folderProjects = [];
+        this.tasks = [];
+        this.projects = [];
     }
-    addTask = (taskName, priority, due, notes) => {
-        if (!(this.folderTasks.some(task => task.name === taskName))) {
-            this.folderTasks.push(new Task(this.folderName, taskName, priority, due, notes));
-        } else console.log("task exists in folder");
+    addTask = (name, priority, due, notes) => {
+        if (!(this.tasks.some(task => task.name === name))) {
+            const task = new Task(this.folderName, name, priority, due, notes);
+            this.tasks.push(task);
+            if (this.folderName !== "Inbox") inbox.tasks.push(task);
+        } else return "A task with this name already exists in the current folder.";
     }
-    removeTask = (taskName) => {
-        const index = this.folderTasks.findIndex(task => task.name === taskName);
+    removeTask = (task) => {
+        const index = this.tasks.findIndex(child => child === task);
         if (index === -1) {
-            console.log("Task not found");
-            return;
+            return "This task does not exist in the current folder.";
+        } else if (this.folderName === "Inbox") {
+            const folderName = task.folder;
+            const originalFolder = folders.find(folder => folder.folderName === folderName);
+            const taskIndex = originalFolder.tasks.findIndex(child => child === task);
+            if (originalFolder.folderName !== "Inbox") originalFolder.tasks.splice(taskIndex, 1);
+            this.tasks.splice(index, 1);
+        } else {
+            const InboxIndex = inbox.tasks.findIndex(child => child === task);
+            inbox.tasks.splice(InboxIndex, 1);
+            this.tasks.splice(index, 1);
         }
-        this.folderTasks.splice(index, 1);
     }
-    addProject = (projectName, priority, due, notes) => {
-        if (!(this.folderProjects.some(project => project.name === projectName))) {
-            this.folderProjects.push(new Project(this.folderName, projectName, priority, due, notes));
-        } else console.log("project exists in folder");
+    addProject = (name, priority, due, notes) => {
+        if (!(this.projects.some(project => project.name === name))) {
+            const project = new Project(this.folderName, name, priority, due, notes);
+            this.projects.push(project);
+            if (this.folderName !== "Inbox") inbox.projects.push(project);
+        } else return "A Project with this name already exists in the folder.";
     }
-    removeProject = (projectName) => {
-        const index = this.folderProjects.findIndex(project => project.name === projectName);
+    removeProject = (project) => {
+        const index = this.projects.findIndex(child => child === project);
         if (index === -1) {
-            console.log("Project not found");
-            return;
+            return "This project does not exist in the current folder.";
+        } else if (this.folderName === "Inbox") {
+            const folderName = project.folder;
+            const originalFolder = folders.find(folder => folder.folderName === folderName);
+            const projectIndex = originalFolder.projects.findIndex(child => child === project);
+            if (originalFolder.folderName !== "Inbox") originalFolder.projects.splice(projectIndex, 1);
+            this.projects.splice(index, 1);
+        } else {
+            const InboxIndex = inbox.projects.findIndex(child => child === project);
+            inbox.projects.splice(InboxIndex, 1);
+            this.projects.splice(index, 1);
         }
-        this.folderProjects.splice(index, 1);
     }
 }
+
+const folders = [new Folder("Inbox"), new Folder("Work"), new Folder("Personal")];
+const [inbox, work, personal] = folders;   
+
+personal.addProject("Project", "High", "12 March", "Notes");
+personal.addProject("Another Project", "High", "12 March", "Notes");
+personal.projects[0].addTask("Personal","Task", "Low", "2 January", "Notes");
+personal.projects[0].addTask("Personal", "Another Task", "Low", "2 January", "Notes");
+work.addTask("Task", "Low", "2 January", "Notes");
+personal.addTask("Another Task", "Low", "2 January", "Notes");
+
+const getFolders = () => {   
+    return folders;
+}
+
+export {getFolders};
+
+
+
+
+
 
