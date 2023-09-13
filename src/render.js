@@ -1,19 +1,7 @@
 import editImage from "./edit-details.svg";
 import deleteImage from "./delete-task.svg";
-export {renderApplication};
 
-
-
-const  renderApplication = (folders) => {
-    const body = document.querySelector("body");
-    body.innerHTML = "<header><h1>Taskmaster</h1></header><main><nav></nav><div class='folder-container'></div></main><form action='' method=''><div class='button-container'></div><div class='input-type-container'><label for='input-type'>Task or Project:</label><select name='input-type' id='input-type' required><option value=''>--Please choose an option--</option><option value='Task'>Task</option><option value='Project'>Project</option></select></div><div><label for='input-name'>Name:</label><input type='text' id='input-name' name='input-name' required></div><div><label for='input-priority'>Priority:</label><select name='input-priority' id='input-priority' required><option value=''>--Please choose an option--</option><option value='Low'>Low</option><option value='Medium'>Medium</option><option value='High'>High</option></select></div><div><label for='input-due'>Due Date:</label><input type='date' id='input-due' name='input-due' required></div><div class='notes'><label for='input-notes'>Notes:</label><textarea id='input-notes' name='input-notes' rows='5' cols='30' value=''></textarea></div></form><footer>Made by <a href='https://github.com/Ngonidzashe-Zvenyika'>Ngonidzashe Zvenyika</a></footer>";
-    folderComponents.loadNav(folders);
-    const current = folders[0];
-    folderComponents.displayFolder(current);
-}
-
-
-
+// These components display and intialize the folders;
 const folderComponents = (() => {
     const heading = (folderName) => {
         const heading = document.createElement("h2");
@@ -53,14 +41,232 @@ const folderComponents = (() => {
         const container = document.querySelector(".folder-container");
         container.replaceChildren();
         container.appendChild(header(folder));
-        container.appendChild(itemComponents.renderProjectsInFolder(folder, folder.folderProjects));
-        container.appendChild(itemComponents.renderTasksInFolder(folder, folder.folderTasks));
+        container.appendChild(itemComponents.renderProjectsInFolder(folder, folder.projects));
+        container.appendChild(itemComponents.renderTasksInFolder(folder, folder.tasks));
     }
     return {loadNav, displayFolder}
 })();
 
+// These components control the pop-up overlay;
+const overlayComponents = (() => {
+    const displayOverlay = () => {
+        const overlay = document.createElement("div");
+        overlay.classList.add("overlay");
+        const body = document.querySelector("body");
+        body.appendChild(overlay);
+        return overlay;
+    }
+    const dismissOverlay = (overlay) => {
+        const body = document.querySelector("body");
+        body.removeChild(overlay);
+    }
+    return {displayOverlay, dismissOverlay};
+})();
 
+// These components display and initialize the various forms;
+const formComponents = (() => {
+    const buttonDismiss = (overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("dismiss-form");
+        button.innerText = "✖";
+        button.setAttribute("type", "button");
+        button.addEventListener("click", () => {
+            dismissForm(overlay);
+        })
+        const container = document.querySelector(".button-container");
+        container.appendChild(button);
+    }
+    const buttonNewItemInFolder = (folder, overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("submit-form");
+        button.innerText = "Submit";
+        button.setAttribute("type", "submit");
+        button.addEventListener("click", (event) => {
+            addToFolder(folder, event, overlay);
+        })
+        const form = document.querySelector("form");
+        form.appendChild(button);
+    }
+    const buttonNewTaskInProject = (project, overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("submit-form");
+        button.innerText = "Submit";
+        button.setAttribute("type", "submit");
+        button.addEventListener("click", (event) => {
+            addToProject(project, event, overlay);
+        })
+        const form = document.querySelector("form");
+        form.appendChild(button);
+    }
+    const buttonEditItemInFolder = (folder, item, overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("submit-form");
+        button.innerText = "Submit";
+        button.setAttribute("type", "submit");
+        button.addEventListener("click", (event) => {
+            editItem(folder, item, event, overlay);
+        })
+        const form = document.querySelector("form");
+        form.appendChild(button);
+    }
+    const buttonEditTaskInProject = (project, task, overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("submit-form");
+        button.innerText = "Submit";
+        button.setAttribute("type", "submit");
+        button.addEventListener("click", (event) => {
+            editTask(project, task, event, overlay);
+        })
+        const form = document.querySelector("form");
+        form.appendChild(button);
+    }
+    const removeButtonDismiss = () => {
+        const button = document.querySelector(".dismiss-form");
+        const container = document.querySelector(".button-container");
+        container.removeChild(button);
+    }
+    const removeButtonSubmit = () => {
+        const button = document.querySelector(".submit-form");
+        const form = document.querySelector("form");
+        form.removeChild(button);
+    }
+    const dismissForm = (overlay) => {
+        removeButtonDismiss();
+        removeButtonSubmit();
+        const form = document.querySelector("form");
+        form.reset();
+        form.style.display = "none";
+        overlayComponents.dismissOverlay(overlay);
+    }
+    const addToFolder = (folder, event, overlay) => {
+        const name = document.getElementById("input-name").value;
+        const priority = document.getElementById("input-priority").value;
+        const due = document.getElementById("input-due").value;
+        const notes = document.getElementById("input-notes").value;
+        const type = document.getElementById("input-type").value;
+        if (name && priority && due && type) {
+            event.preventDefault();
+            let exists = false;
+            switch (type) {
+                case "Task":
+                    exists = messageComponents.exists(folder.addTask(name, priority, due, notes));
+                    break;
+                case "Project":
+                    exists = messageComponents.exists(folder.addProject(name, priority, due, notes));
+                    break;
+            }
+            if (!exists) {
+                folderComponents.displayFolder(folder);
+                dismissForm(overlay);
+            }
+        }
+    }
+    const addToProject = (project, event, overlay) => {
+        const taskName = document.getElementById("input-name").value;
+        const taskPriority = document.getElementById("input-priority").value;
+        const taskDue = document.getElementById("input-due").value;
+        const taskNotes = document.getElementById("input-notes").value;
+        if (taskName && taskPriority && taskDue) {
+            event.preventDefault();
+            const exists = messageComponents.exists(project.addTask(project.folder, taskName, taskPriority, taskDue, taskNotes));
+            if (!exists) {
+                detailsComponents.updateProjectDetails(project);
+                dismissForm(overlay);
+            }
+        }
+    }
+    const editItem = (folder, item, event, overlay) => {
+        const name = document.getElementById("input-name").value;
+        const priority = document.getElementById("input-priority").value;
+        const due = document.getElementById("input-due").value;
+        const notes = document.getElementById("input-notes").value;
+        if (name && priority && due) {
+            event.preventDefault();
+            const exists = messageComponents.exists(item.editDetails(folder, name, priority, due, notes));
+            if (!exists) {
+                folderComponents.displayFolder(folder);
+                dismissForm(overlay);
+            }
+        }
+    }
+    const editTask = (project, task, event, overlay) => {
+        const name = document.getElementById("input-name").value;
+        const priority = document.getElementById("input-priority").value;
+        const due = document.getElementById("input-due").value;
+        const notes = document.getElementById("input-notes").value;
+        if (name && priority && due) {
+            event.preventDefault();
+            const exists = messageComponents.exists(task.editDetails(project, name, priority, due, notes));
+            if (!exists) {
+                detailsComponents.updateProjectDetails(project);
+                dismissForm(overlay);
+            }
+        }
+    }
+    const addType = () => {
+        const container = document.querySelector(".input-type-container");
+        container.style.display = "grid";
+        const type = document.getElementById("input-type");
+        type.setAttribute("required", "true");
+    }
+    const removeType = () => {
+        const container = document.querySelector(".input-type-container");
+        container.style.display = "none";
+        const type = document.getElementById("input-type");
+        type.removeAttribute("required");
+    }
+    const newItemInFolder = (folder) => {
+        addType();
+        const overlay = overlayComponents.displayOverlay();
+        buttonDismiss(overlay);
+        buttonNewItemInFolder(folder, overlay);
+        const form = document.querySelector("form");
+        form.style.display = "grid";
+    }
+    const newTaskInProject = (project) => {
+        removeType();
+        const overlay = overlayComponents.displayOverlay();
+        buttonDismiss(overlay);
+        buttonNewTaskInProject(project, overlay);
+        const form = document.querySelector("form");
+        form.style.display = "grid";
+    }
+    const editItemInFolder = (folder, item) => {
+        removeType();
+        const overlay = overlayComponents.displayOverlay();
+        buttonDismiss(overlay);
+        buttonEditItemInFolder(folder, item, overlay);
+        const name = document.getElementById("input-name");
+        name.value = item.name;
+        const priority = document.getElementById("input-priority");
+        priority.value = item.priority;
+        const due = document.getElementById("input-due");
+        due.value = item.due;
+        const notes = document.getElementById("input-notes");
+        notes.value = item.notes;
+        const form = document.querySelector("form");
+        form.style.display = "grid";
+    }
+    const editTaskInProject = (project, task) => {
+        removeType();
+        const overlay = overlayComponents.displayOverlay();
+        buttonDismiss(overlay);
+        buttonEditTaskInProject(project, task, overlay);
+        const name = document.getElementById("input-name");
+        name.value = task.name;
+        const priority = document.getElementById("input-priority");
+        priority.value = task.priority;
+        const due = document.getElementById("input-due");
+        due.value = task.due;
+        const notes = document.getElementById("input-notes");
+        notes.value = task.notes;
+        const form = document.querySelector("form");
+        form.style.display = "grid";
+    }
+    return {newItemInFolder, newTaskInProject, editItemInFolder, editTaskInProject};
+})();
 
+// These components display and initialize the individual projects and tasks (items);
 const itemComponents = (() => {
     const itemContainer = () => {
         const container = document.createElement("div");
@@ -93,16 +299,40 @@ const itemComponents = (() => {
     const strikeThrough = (nameElement, status) => {
         nameElement.style.textDecoration = (status === true) ? "line-through" : "none";
     }
-    const checkbox = (item, status, nameElement) => {
+    const checkboxInFolder = (item, status, nameElement) => {
         const element = document.createElement("input");
         element.classList.add("checkbox");
         element.setAttribute("type", "checkbox");
-        if (status === true) element.setAttribute("checked", "true");
-        element.addEventListener("click", () => {
-            item.toggleStatus();
-            strikeThrough(nameElement, item.status);
+        (status === true) ? element.checked = true : element.checked = false;
+        element.addEventListener("click", (event) => {
+            const message = item.toggleStatus();
+            if (message) {
+                event.preventDefault();
+                messageComponents.completed(message);
+            } else {
+                (item.status === true) ? element.checked = true : element.checked = false;
+                strikeThrough(nameElement, item.status);
+            }
         })
         return element;
+    }
+    const checkboxInProject = (projectComplete, item, status, nameElement) => {
+            const element = document.createElement("input");
+            element.classList.add("checkbox");
+            element.setAttribute("type", "checkbox");
+            (status === true) ? element.checked = true : element.checked = false;
+            element.addEventListener("click", (event) => {
+                if (projectComplete) {
+                    event.preventDefault();
+                    const message = "You may not edit tasks within a completed project.";
+                    messageComponents.completed(message);
+                } else {
+                    item.toggleStatus();
+                    (item.status === true) ? element.checked = true : element.checked = false;
+                    strikeThrough(nameElement, item.status);
+                }
+            })
+            return element;
     }
     const due = (dueDate) => {
         const element = document.createElement("p");
@@ -113,10 +343,11 @@ const itemComponents = (() => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = editImage;
-        icon.alt = "Edit details";
+        icon.alt = "Edit item details";
         icon.addEventListener("click", () => {
             if (item.status === true) {
-                //
+                const message = "You may not edit a completed item.";
+                messageComponents.completed(message);
             } else formComponents.editItemInFolder(folder, item);
         })
         return icon;
@@ -125,43 +356,44 @@ const itemComponents = (() => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = editImage;
-        icon.alt = "Edit details";
+        icon.alt = "Edit item details";
         icon.addEventListener("click", () => {
             if (task.status === true) {
-                //
+                const message = "You may not edit a completed item.";
+                messageComponents.completed(message);
             } else formComponents.editTaskInProject(project, task);
         })
         return icon;
     }
-    const iconDeleteTaskInFolder = (folder, taskName) => {
+    const iconDeleteTaskInFolder = (folder, task) => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = deleteImage;
-        icon.alt = "Delete task";
+        icon.alt = "Delete item";
         icon.addEventListener("click", () => {
-            folder.removeTask(taskName);
+            folder.removeTask(task);
             folderComponents.displayFolder(folder);
         })
         return icon;
     }
-    const iconDeleteProjectInFolder = (folder, projectName) => {
+    const iconDeleteProjectInFolder = (folder, project) => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = deleteImage;
-        icon.alt = "Delete task";
+        icon.alt = "Delete item";
         icon.addEventListener("click", () => {
-            folder.removeProject(projectName);
+            folder.removeProject(project);
             folderComponents.displayFolder(folder);
         })
         return icon;
     }
-    const iconDeleteTaskInProject = (project, taskName) => {
+    const iconDeleteTaskInProject = (project, task) => {
         const icon = document.createElement("img");
         icon.classList.add("icon");
         icon.src = deleteImage;
-        icon.alt = "Delete task";
+        icon.alt = "Delete item";
         icon.addEventListener("click", () => {
-            project.removeTask(taskName);
+            project.removeTask(task);
             detailsComponents.updateProjectDetails(project);
         })
         return icon;
@@ -175,13 +407,6 @@ const itemComponents = (() => {
         const element = document.createElement("h3");
         element.innerText = "Projects";
         return element;
-    }
-    const headerTasksInProject = (project) => {
-        const container = document.createElement("div");
-        container.classList.add("header-container")
-        container.appendChild(headingTasks());
-        container.appendChild(buttonNewTaskInProject(project));
-        return container;
     }
     const buttonTaskDetails = (task) => {
         const button = document.createElement("button");
@@ -201,6 +426,13 @@ const itemComponents = (() => {
         })
         return button;
     }
+    const headerTasksInProject = (project) => {
+        const container = document.createElement("div");
+        container.classList.add("header-container")
+        container.appendChild(headingTasks());
+        container.appendChild(buttonNewTaskInProject(project));
+        return container;
+    }
     const buttonNewTaskInProject = (project) => {
         const button = document.createElement("button");
         button.classList.add("new-item");
@@ -219,12 +451,12 @@ const itemComponents = (() => {
             const element = itemContainer();
             element.appendChild(priority(task.priority));
             const nameElement = name(task.name, task.status);
-            element.appendChild(checkbox(task, task.status, nameElement));
+            element.appendChild(checkboxInFolder(task, task.status, nameElement));
             element.appendChild(nameElement);
             element.appendChild(buttonTaskDetails(task));
             element.appendChild(due(task.due));
             element.appendChild(iconEditItemInFolder(folder, task));
-            element.appendChild(iconDeleteTaskInFolder(folder, task.name));
+            element.appendChild(iconDeleteTaskInFolder(folder, task));
             container.appendChild(element);
         }
         return container;
@@ -237,13 +469,13 @@ const itemComponents = (() => {
             const element = itemContainer();
             element.appendChild(priority(project.priority));
             const nameElement = name(project.name, project.status);
-            element.appendChild(checkbox(project, project.status, nameElement));
+            element.appendChild(checkboxInFolder(project, project.status, nameElement));
             element.appendChild(nameElement);
             element.appendChild(buttonProjectDetails(project));
             element.appendChild(due(project.due));
             element.appendChild(iconEditItemInFolder(folder, project));
-            element.appendChild(iconDeleteProjectInFolder(folder, project.name));
-            container.appendChild(element);
+            element.appendChild(iconDeleteProjectInFolder(folder, project));
+            container.append(element);
         }
         return container;
     }
@@ -255,12 +487,12 @@ const itemComponents = (() => {
             const element = itemContainer();
             element.appendChild(priority(task.priority));
             const nameElement = name(task.name, task.status);
-            element.appendChild(checkbox(task, task.status, nameElement));
+            element.appendChild(checkboxInProject(project.status, task, task.status, nameElement));
             element.appendChild(nameElement);
             element.appendChild(buttonTaskDetails(task));
             element.appendChild(due(task.due));
             element.appendChild(iconEditTaskInProject(project, task));
-            element.appendChild(iconDeleteTaskInProject(project, task.name));
+            element.appendChild(iconDeleteTaskInProject(project, task));
             container.appendChild(element);
         }
         return container;
@@ -268,252 +500,34 @@ const itemComponents = (() => {
     return {renderTasksInFolder, renderProjectsInFolder, renderTasksInProject}
 })();
 
-
-
-const formComponents = (() => {
-    const displayOverlay = () => {
-        const overlay = document.createElement("div");
-        overlay.classList.add("overlay-form");
-        const body = document.querySelector("body");
-        body.appendChild(overlay);
-    }
-    const dismissOverlay = () => {
-        const body = document.querySelector("body");
-        const overlay = document.querySelector(".overlay-form");
-        body.removeChild(overlay);
-    }
-    const buttonDismiss = () => {
-        const button = document.createElement("button");
-        button.classList.add("dismiss-form");
-        button.innerText = "✖";
-        button.setAttribute("type", "button");
-        button.addEventListener("click", () => {
-            dismissForm();
-        })
-        const container = document.querySelector(".button-container");
-        container.appendChild(button);
-    }
-    const removeButtonDismiss = () => {
-        const button = document.querySelector(".dismiss-form");
-        const container = document.querySelector(".button-container");
-        container.removeChild(button);
-    }
-    const buttonNewItemInFolder = (folder) => {
-        const button = document.createElement("button");
-        button.classList.add("submit-form");
-        button.innerText = "Submit";
-        button.setAttribute("type", "submit");
-        button.addEventListener("click", (event) => {
-            addToFolder(folder, event);
-        })
-        const form = document.querySelector("form");
-        form.appendChild(button);
-    }
-    const buttonNewTaskInProject = (project) => {
-        const button = document.createElement("button");
-        button.classList.add("submit-form");
-        button.innerText = "Submit";
-        button.setAttribute("type", "submit");
-        button.addEventListener("click", (event) => {
-            addToProject(project, event);
-        })
-        const form = document.querySelector("form");
-        form.appendChild(button);
-    }
-    const buttonEditItemInFolder = (folder, item) => {
-        const button = document.createElement("button");
-        button.classList.add("submit-form");
-        button.innerText = "Submit";
-        button.setAttribute("type", "submit");
-        button.addEventListener("click", (event) => {
-            editItem(item, event);
-            dismissForm();
-            folderComponents.displayFolder(folder);
-        })
-        const form = document.querySelector("form");
-        form.appendChild(button);
-    }
-    const buttonEditTaskInProject = (project, task) => {
-        const button = document.createElement("button");
-        button.classList.add("submit-form");
-        button.innerText = "Submit";
-        button.setAttribute("type", "submit");
-        button.addEventListener("click", (event) => {
-            editTask(project, task, event);
-        })
-        const form = document.querySelector("form");
-        form.appendChild(button);
-    }
-    const removeButtonSubmit = () => {
-        const button = document.querySelector(".submit-form");
-        const form = document.querySelector("form");
-        form.removeChild(button);
-    }
-    const addToFolder = (folder, event) => {
-        const name = document.getElementById("input-name").value;
-        const priority = document.getElementById("input-priority").value;
-        const due = document.getElementById("input-due").value;
-        const notes = document.getElementById("input-notes").value;
-        const item = document.getElementById("input-type").value;
-        if (name && priority && due && item) {
-            event.preventDefault();
-            switch (item) {
-                case "Task":
-                    folder.addTask(name, priority, due, notes);
-                    break;
-                case "Project":
-                    folder.addProject(name, priority, due, notes);
-                    break;
-            }
-            folderComponents.displayFolder(folder);
-            dismissForm();
-        }
-    }
-    const addToProject = (project, event) => {
-        const taskName = document.getElementById("input-name").value;
-        const taskPriority = document.getElementById("input-priority").value;
-        const taskDue = document.getElementById("input-due").value;
-        const taskNotes = document.getElementById("input-notes").value;
-        if (taskName && taskPriority && taskDue) {
-            event.preventDefault();
-            project.addTask(project.folder, taskName, taskPriority, taskDue, taskNotes);
-            detailsComponents.updateProjectDetails(project);
-            dismissForm();
-        }
-    }
-    const editItem = (item, event) => {
-        const name = document.getElementById("input-name").value;
-        const priority = document.getElementById("input-priority").value;
-        const due = document.getElementById("input-due").value;
-        const notes = document.getElementById("input-notes").value;
-        if (name && priority && due) {
-            event.preventDefault();
-            item.editDetails(name, priority, due, notes);
-        }
-    }
-    const editTask = (project, task, event) => {
-        const name = document.getElementById("input-name").value;
-        const priority = document.getElementById("input-priority").value;
-        const due = document.getElementById("input-due").value;
-        const notes = document.getElementById("input-notes").value;
-        if (name && priority && due) {
-            event.preventDefault();
-            task.editDetails(name, priority, due, notes);
-            detailsComponents.updateProjectDetails(project);
-            dismissForm();
-        }
-    }
-    const addType = () => {
-        const container = document.querySelector(".input-type-container");
-        container.style.display = "grid";
-        const type = document.getElementById("input-type");
-        type.setAttribute("required", "true");
-    }
-    const removeType = () => {
-        const container = document.querySelector(".input-type-container");
-        container.style.display = "none";
-        const type = document.getElementById("input-type");
-        type.removeAttribute("required");
-    }
-    const newItemInFolder = (folder) => {
-        addType();
-        displayOverlay();
-        buttonDismiss();
-        buttonNewItemInFolder(folder);
-        const form = document.querySelector("form");
-        form.style.display = "grid";
-    }
-    const newTaskInProject = (project) => {
-        removeType();
-        displayOverlay();
-        buttonDismiss();
-        buttonNewTaskInProject(project);
-        const form = document.querySelector("form");
-        form.style.display = "grid";
-    }
-    const editItemInFolder = (folder, item) => {
-        buttonDismiss();
-        removeType();
-        const name = document.getElementById("input-name");
-        name.value = item.name;
-        const priority = document.getElementById("input-priority");
-        priority.value = item.priority;
-        const due = document.getElementById("input-due");
-        due.value = item.due;
-        const notes = document.getElementById("input-notes");
-        notes.value = item.notes;
-        displayOverlay();
-        buttonEditItemInFolder(folder, item);
-        const form = document.querySelector("form");
-        form.style.display = "grid";
-    }
-    const editTaskInProject = (project, task) => {
-        buttonDismiss();
-        removeType();
-        const name = document.getElementById("input-name");
-        name.value = task.name;
-        const priority = document.getElementById("input-priority");
-        priority.value = task.priority;
-        const due = document.getElementById("input-due");
-        due.value = task.due;
-        const notes = document.getElementById("input-notes");
-        notes.value = task.notes;
-        displayOverlay();
-        buttonEditTaskInProject(project, task);
-        const form = document.querySelector("form");
-        form.style.display = "grid";
-    }
-    const dismissForm = () => {
-        removeButtonDismiss();
-        removeButtonSubmit();
-        dismissOverlay();
-        const form = document.querySelector("form");
-        form.reset();
-        form.style.display = "none";
-    }
-    return {newItemInFolder, newTaskInProject, editItemInFolder, editTaskInProject};
-})();
-
-
-
+// These components display the details for each task or project object;
 const detailsComponents = (() => {
-    const displayOverlay = () => {
-        const overlay = document.createElement("div");
-        overlay.classList.add("overlay-details");
-        const body = document.querySelector("body");
-        body.appendChild(overlay);
-    }
-    const dismissOverlay = () => {
-        const body = document.querySelector("body");
-        const overlay = document.querySelector(".overlay-details");
-        body.removeChild(overlay);
-    }
-    const buttonDismiss = (details) => {
+    const buttonDismiss = (details, overlay) => {
         const button = document.createElement("button");
         button.classList.add("dismiss-details");
         button.innerText = "✖";
         button.addEventListener("click", () => {
-            dismissDetails(details);
+            dismissDetails(details, overlay);
         })
         return button;
     }
-    const dismissDetails = (details) => {
-        dismissOverlay();
+    const dismissDetails = (detailsContainer, overlay) => {
         const body = document.querySelector("body");
-        body.removeChild(details);
+        body.removeChild(detailsContainer);
+        overlayComponents.dismissOverlay(overlay);
     }
     const name = (name) => {
         const element = document.createElement("h2");
         element.innerText = name;
         return element;
     }
-    const folder = (folder) => {
+    const folder = (folderName) => {
         const container = document.createElement("div");
         container.classList.add("row");
         const label = document.createElement("h4");
         label.innerText = "Folder:";
         const value = document.createElement("p");
-        value.innerText = folder;
+        value.innerText = folderName;
         container.appendChild(label);
         container.appendChild(value);
         return container;
@@ -563,10 +577,11 @@ const detailsComponents = (() => {
         container.appendChild(value);
         return container;
     }
-    const renderTaskDetails = (task) => {
+    const renderTaskDetails = (task, overlay) => {
         const container = document.createElement("div");
         container.classList.add("details");
-        container.appendChild(buttonDismiss(container));
+        container.classList.add("task-details");
+        container.appendChild(buttonDismiss(container, overlay));
         container.appendChild(name(task.name));
         container.appendChild(folder(task.folder));
         container.appendChild(priority(task.priority));
@@ -575,10 +590,11 @@ const detailsComponents = (() => {
         container.appendChild(notes(task.notes));
         return container;
     }
-    const renderProjectDetails = (project) => {
+    const renderProjectDetails = (project, overlay) => {
         const container = document.createElement("div");
         container.classList.add("details");
-        container.appendChild(buttonDismiss(container));
+        container.classList.add("project-details");
+        container.appendChild(buttonDismiss(container, overlay));
         container.appendChild(name(project.name));
         container.appendChild(folder(project.folder));
         container.appendChild(priority(project.priority));
@@ -589,25 +605,73 @@ const detailsComponents = (() => {
         return container;
     }
     const displayTaskDetails = (task) => {
-        displayOverlay();
+        const overlay = overlayComponents.displayOverlay();
         const body = document.querySelector("body");
-        body.appendChild(renderTaskDetails(task));
+        body.appendChild(renderTaskDetails(task, overlay));
     }
     const displayProjectDetails = (project) => {
-        displayOverlay();
+        const overlay = overlayComponents.displayOverlay();
         const body = document.querySelector("body");
-        body.appendChild(renderProjectDetails(project));
+        body.appendChild(renderProjectDetails(project, overlay));
     }
     const updateProjectDetails = (project) => {
         const currentDetails = document.querySelector(".details");
+        const overlay = document.querySelector(".overlay");
         const body = document.querySelector("body");
         body.removeChild(currentDetails);
-        body.appendChild(renderProjectDetails(project));
-    }
-    return {displayProjectDetails, displayTaskDetails, updateProjectDetails}
+        body.removeChild(overlay);
+        displayProjectDetails(project); 
+    }   
+    return {displayTaskDetails, displayProjectDetails, updateProjectDetails}
 })();
 
+// These components display elaborative messages when an operation fails;
+const messageComponents = (() => {
+    const buttonDismiss = (container, overlay) => {
+        const button = document.createElement("button");
+        button.classList.add("dismiss-message");
+        button.innerText = "✖";
+        button.addEventListener("click", () => {
+            dismissMessage(container, overlay);
+        })
+        return button;
+    }
+    const dismissMessage = (messageContainer, overlay) => {
+        const body = document.querySelector("body");
+        body.removeChild(messageContainer);
+        overlayComponents.dismissOverlay(overlay);
+    }
+    const displayMessage = (text) => {
+        const overlay = overlayComponents.displayOverlay();
+        const container = document.createElement("div");
+        container.classList.add("message");
+        const message = document.createElement("p");
+        message.classList.add("text");
+        message.innerText = text;
+        container.appendChild(buttonDismiss(container, overlay));
+        container.appendChild(message);
+        const body = document.querySelector("body");
+        body.appendChild(container);
+    }
+    const exists = (exists) => {
+        if (exists) {
+            displayMessage(exists);
+            return true;
+        }
+    }
+    const completed = (text) => {
+        if (text) displayMessage(text);
+    }
+    return {exists, completed};
+})();
 
+// This function is exported to initialze the application display.
+const displayApplication = (folders) => {
+    const body = document.querySelector("body");
+    body.innerHTML = "<header><h1>Task Master</h1></header><main><nav></nav><div class='folder-container'></div></main><form action='' method=''><div class='button-container'></div><div class='input-type-container'><label for='input-type'>Task or Project:</label><select name='input-type' id='input-type' required><option value=''>--Please choose an option--</option><option value='Task'>Task</option><option value='Project'>Project</option></select></div><div><label for='input-name'>Name:</label><input type='text' id='input-name' name='input-name' required></div><div><label for='input-priority'>Priority:</label><select name='input-priority' id='input-priority' required><option value=''>--Please choose an option--</option><option value='Low'>Low</option><option value='Medium'>Medium</option><option value='High'>High</option></select></div><div><label for='input-due'>Due Date:</label><input type='date' id='input-due' name='input-due' required></div><div class='notes'><label for='input-notes'>Notes:</label><textarea id='input-notes' name='input-notes' rows='5' cols='30' value=''></textarea></div></form><footer>Made by <a href='https://github.com/Ngonidzashe-Zvenyika'>Ngonidzashe Zvenyika</a></footer>";
+    folderComponents.loadNav(folders);
+    const current = folders[0];
+    folderComponents.displayFolder(current);
+}
 
-
-
+export {displayApplication};
