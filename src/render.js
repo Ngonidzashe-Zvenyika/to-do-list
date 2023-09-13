@@ -1,3 +1,4 @@
+import {format, parseISO} from "date-fns";
 import editImage from "./edit-details.svg";
 import deleteImage from "./delete-task.svg";
 
@@ -336,7 +337,7 @@ const itemComponents = (() => {
     }
     const due = (dueDate) => {
         const element = document.createElement("p");
-        element.innerText = dueDate;
+        element.innerText = format(parseISO(dueDate), "dd MMM");
         return element;
     }
     const iconEditItemInFolder = (folder, item) => {
@@ -393,8 +394,13 @@ const itemComponents = (() => {
         icon.src = deleteImage;
         icon.alt = "Delete item";
         icon.addEventListener("click", () => {
-            project.removeTask(task);
-            detailsComponents.updateProjectDetails(project);
+            if (project.status === true) {
+                const message = "You may not edit tasks within a completed project.";
+                messageComponents.completed(message);
+            } else {
+                project.removeTask(task);
+                detailsComponents.updateProjectDetails(project);
+            }
         })
         return icon;
     }
@@ -439,7 +445,12 @@ const itemComponents = (() => {
         button.innerText = "➕";
         button.type = "button";
         button.addEventListener("click", () => {
-            formComponents.newTaskInProject(project);
+            if (project.status) {
+                const message = "You may not edit tasks within a completed project.";
+                messageComponents.completed(message);
+            } else {
+                formComponents.newTaskInProject(project);
+            }
         })
         return button;
     }
@@ -549,7 +560,7 @@ const detailsComponents = (() => {
         const label = document.createElement("h4");
         label.innerText = "Due Date:";
         const value = document.createElement("p");
-        value.innerText = due;
+        value.innerText = format(parseISO(due), "EEEE - dd MMMM yyyy");
         container.appendChild(label);
         container.appendChild(value);
         return container;

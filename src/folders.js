@@ -123,12 +123,12 @@ const Folder = class {
 const folders = [new Folder("Inbox"), new Folder("Work"), new Folder("Personal")];
 const [inbox, work, personal] = folders;   
 
-personal.addProject("Project", "High", "12 March", "Notes");
-personal.addProject("Another Project", "High", "12 March", "Notes");
-personal.projects[0].addTask("Personal","Task", "Low", "2 January", "Notes");
-personal.projects[0].addTask("Personal", "Another Task", "Low", "2 January", "Notes");
-work.addTask("Task", "Low", "2 January", "Notes");
-personal.addTask("Another Task", "Low", "2 January", "Notes");
+personal.addProject("Project", "High", "2023-07-05", "Notes");
+personal.addProject("Another Project", "High", "2023-07-05", "Notes");
+personal.projects[0].addTask("Personal","Task", "Low", "2023-07-05", "Notes");
+personal.projects[0].addTask("Personal", "Another Task", "Low", "2023-07-05", "Notes");
+work.addTask("Task", "Low", "2023-07-05", "Notes");
+personal.addTask("Another Task", "Low", "2023-07-05", "Notes");
 
 const getFolders = () => {   
     return folders;
