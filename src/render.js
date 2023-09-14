@@ -53,9 +53,13 @@ const overlayComponents = (() => {
     const displayOverlay = () => {
         const overlay = document.createElement("div");
         overlay.classList.add("overlay");
+        zIndex(overlay);
         const body = document.querySelector("body");
         body.appendChild(overlay);
         return overlay;
+    }
+    const zIndex = (overlay) => {
+        if (document.querySelector("form").style.display === "grid") overlay.style.zIndex = "1";
     }
     const dismissOverlay = (overlay) => {
         const body = document.querySelector("body");
@@ -171,8 +175,8 @@ const formComponents = (() => {
             event.preventDefault();
             const exists = messageComponents.exists(project.addTask(project.folder, taskName, taskPriority, taskDue, taskNotes));
             if (!exists) {
-                detailsComponents.updateProjectDetails(project);
                 dismissForm(overlay);
+                detailsComponents.updateProjectDetails(project);
             }
         }
     }
@@ -199,8 +203,8 @@ const formComponents = (() => {
             event.preventDefault();
             const exists = messageComponents.exists(task.editDetails(project, name, priority, due, notes));
             if (!exists) {
-                detailsComponents.updateProjectDetails(project);
                 dismissForm(overlay);
+                detailsComponents.updateProjectDetails(project);
             }
         }
     }
