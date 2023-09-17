@@ -6,11 +6,14 @@ Practice use of `Solid Design Principles`
 
 ## Skills Used
 1. Webpack
-2. NPM
+2. NPM 
 3. JavaScript
 4. CSS
 5. HTML
 6. GitHub
+7. Web Storage API
+8. JSON
+9. Date-fns
 
 #### Sources:
 * Icons by <a href="https://ionic.io/ionicons">Ionic</a>
