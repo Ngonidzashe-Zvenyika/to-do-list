@@ -109,11 +109,9 @@ button {
 }
 
 .new-item {
-    width: 36px;
-    height: 36px;
+    font-size: 2rem;
     border-radius: 50%;
-    border: 2px solid var(--color-one);
-    background-color: var(--color-five);
+    background-color: var(--color-two);
 }
 
 .new-item:hover {

@@ -98,7 +98,7 @@ class Project {
         saveToStorage();
     }
     sortTasks = () => {
-        this.tasks.sort((a, b) => (isAfter(parseISO(a.due), parseISO(b.due))) ?  1 : -1 );
+        this.tasks.sort((a, b) => (isAfter(parseISO(a.due), parseISO(b.due))) ?  1 : -1 ); //Using date-fns to assist with sorting tasks based on their due date;
         saveToStorage();
     }
 }
