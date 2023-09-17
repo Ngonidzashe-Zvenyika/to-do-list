@@ -103,6 +103,8 @@ class Project {
     }
 }
 
+
+// The inbox folder is a global folder containing all task and poject objects that are unique to it and also those found in other folders;
 // This class contains the assets to create and manipulate folder objects;
 const Folder = class {
     constructor (folderName) {
