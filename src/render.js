@@ -31,8 +31,13 @@ const folderComponents = (() => {
             const nav = document.querySelector("nav");
             const button = document.createElement("button");
             button.innerText = folder.folderName;
+            if (folder.folderName === "Inbox") button.classList.add("selected");
             button.type = "button";
+            button.classList.add("nav-button");
             button.addEventListener("click", () => {
+                const navButtons = Array.from(document.querySelectorAll(".nav-button"));
+                navButtons.forEach(button => button.classList.remove("selected"));
+                button.classList.add("selected");
                 displayFolder(folder);
             })
             nav.appendChild(button);
@@ -295,8 +300,7 @@ const itemComponents = (() => {
         return element;
     }
     const name = (name, status) => {
-        const element = document.createElement("h4");
-        element.classList.add("name");
+        const element = document.createElement("p");
         element.innerText = name;
         strikeThrough(element, status);
         return element;
@@ -306,7 +310,6 @@ const itemComponents = (() => {
     }
     const checkboxInFolder = (item, status, nameElement) => {
         const element = document.createElement("input");
-        element.classList.add("checkbox");
         element.setAttribute("type", "checkbox");
         (status === true) ? element.checked = true : element.checked = false;
         element.addEventListener("click", (event) => {
@@ -341,7 +344,7 @@ const itemComponents = (() => {
     }
     const due = (dueDate) => {
         const element = document.createElement("p");
-        element.innerText = format(parseISO(dueDate), "dd MMM");
+        element.innerText = format(parseISO(dueDate), "dd MMM"); // Using date-fns to convert the date format;
         return element;
     }
     const iconEditItemInFolder = (folder, item) => {
@@ -460,7 +463,6 @@ const itemComponents = (() => {
     }
     const renderTasksInFolder = (folder, tasks) => {
         const container = document.createElement("div");
-        container.classList.add("tasks");
         if (tasks.length >= 1) container.appendChild(headingTasks());
         for (const task of tasks) {
             const element = itemContainer();
@@ -478,7 +480,6 @@ const itemComponents = (() => {
     }
     const renderProjectsInFolder = (folder, projects) => { 
         const container = document.createElement("div");
-        container.classList.add("projects");
         if (projects.length >= 1) container.appendChild(headingProjects());
         for (const project of projects) {
             const element = itemContainer();
@@ -496,7 +497,6 @@ const itemComponents = (() => {
     }
     const renderTasksInProject = (project, tasks) => {
         const container = document.createElement("div");
-        container.classList.add("tasks");
         container.appendChild(headerTasksInProject(project));
         for (const task of tasks) {
             const element = itemContainer();
@@ -564,7 +564,7 @@ const detailsComponents = (() => {
         const label = document.createElement("h4");
         label.innerText = "Due Date:";
         const value = document.createElement("p");
-        value.innerText = format(parseISO(due), "EEEE - dd MMMM yyyy");
+        value.innerText = format(parseISO(due), "EEEE - dd MMMM yyyy");  // Using date-fns to convert the format of the date;
         container.appendChild(label);
         container.appendChild(value);
         return container;
@@ -663,8 +663,8 @@ const messageComponents = (() => {
         const message = document.createElement("p");
         message.classList.add("text");
         message.innerText = text;
-        container.appendChild(buttonDismiss(container, overlay));
         container.appendChild(message);
+        container.appendChild(buttonDismiss(container, overlay));
         const body = document.querySelector("body");
         body.appendChild(container);
     }
@@ -683,7 +683,7 @@ const messageComponents = (() => {
 // This function is exported to initialze the application display.
 const displayApplication = (folders) => {
     const body = document.querySelector("body");
-    body.innerHTML = "<header><h1>Task Master</h1></header><main><nav></nav><div class='folder-container'></div></main><form action='' method=''><div class='button-container'></div><div class='input-type-container'><label for='input-type'>Task or Project:</label><select name='input-type' id='input-type' required><option value=''>--Please choose an option--</option><option value='Task'>Task</option><option value='Project'>Project</option></select></div><div><label for='input-name'>Name:</label><input type='text' id='input-name' name='input-name' required></div><div><label for='input-priority'>Priority:</label><select name='input-priority' id='input-priority' required><option value=''>--Please choose an option--</option><option value='Low'>Low</option><option value='Medium'>Medium</option><option value='High'>High</option></select></div><div><label for='input-due'>Due Date:</label><input type='date' id='input-due' name='input-due' required></div><div class='notes'><label for='input-notes'>Notes:</label><textarea id='input-notes' name='input-notes' rows='5' cols='30' value=''></textarea></div></form><footer>Made by <a href='https://github.com/Ngonidzashe-Zvenyika'>Ngonidzashe Zvenyika</a></footer>";
+    body.innerHTML = "<header><h1>To-Do</h1></header><main><nav></nav><div class='folder-container'></div><form action='' method=''><div class='button-container'></div><div class='input-type-container'><label for='input-type'>Task/Project:</label><select name='input-type' id='input-type' required><option value=''>--Select--</option><option value='Task'>Task</option><option value='Project'>Project</option></select></div><div><label for='input-name'>Name:</label><input type='text' id='input-name' name='input-name' required></div><div><label for='input-priority'>Priority:</label><select name='input-priority' id='input-priority' required><option value=''>--Select--</option><option value='Low'>Low</option><option value='Medium'>Medium</option><option value='High'>High</option></select></div><div><label for='input-due'>Due Date:</label><input type='date' id='input-due' name='input-due' required></div><div class='notes'><label for='input-notes'>Notes:</label><textarea id='input-notes' name='input-notes' value=''></textarea></div></form></main><footer>Made by <a href='https://github.com/Ngonidzashe-Zvenyika'>Ngonidzashe Zvenyika</a></footer>";
     folderComponents.loadNav(folders);
     const current = folders[0];
     folderComponents.displayFolder(current);
