@@ -1,5 +1,6 @@
 import {isAfter, parseISO} from 'date-fns';
 
+// This class contains the assets to create and manipulate task objects;
 class Task {
     constructor (folderName, name, priority, due, notes) {
         this.name = name;
@@ -17,7 +18,7 @@ class Task {
         switch (true) {
             case (this.status === true):
                 return "You may not edit a completed task.";
-            case (!(parent.tasks.some(task => task.name === name && task !== this))):
+            case (!(parent.tasks.some(task => task.name === name && task.folder === this.folder && task !== this))):
                 this.name = name;
                 this.priority = priority;
                 this.due = due;
@@ -39,6 +40,7 @@ class Task {
     }
 }
 
+// This class contains the assets to create and manipulate project objects;
 class Project {
     constructor (folderName, name, priority, due, notes) {
         this.name = name;
@@ -62,7 +64,7 @@ class Project {
         switch (true) {
             case (this.status === true):
                 return "You may not edit a completed project.";
-            case (!(folder.projects.some(project => project.name === name && project !== this))):
+            case (!(folder.projects.some(project => project.name === name && project.folder === this.folder && project !== this))):
                 this.name = name;
                 this.priority = priority;
                 this.due = due;
@@ -101,6 +103,7 @@ class Project {
     }
 }
 
+// This class contains the assets to create and manipulate folder objects;
 const Folder = class {
     constructor (folderName) {
         this.folderName = folderName;
@@ -108,7 +111,7 @@ const Folder = class {
         this.projects = [];
     }
     addTask = (name, priority, due, notes) => {
-        if (!(this.tasks.some(task => task.name === name))) {
+        if (!(this.tasks.some(task => task.name === name && task.folder === this.folderName))) {
             const task = new Task(this.folderName, name, priority, due, notes);
             this.tasks.push(task);
             this.sortTasks();
@@ -127,7 +130,7 @@ const Folder = class {
             const taskFolder = folders.find(folder => folder.folderName === task.folder);
             const taskIndex = taskFolder.tasks.findIndex(child => child === task);
             taskFolder.tasks.splice(taskIndex, 1);
-        } else {
+        } else if (this.folderName !== "Inbox") {
             const InboxIndex = inbox.tasks.findIndex(child => child === task);
             inbox.tasks.splice(InboxIndex, 1);
         }
@@ -135,7 +138,7 @@ const Folder = class {
         saveToStorage();
     }
     addProject = (name, priority, due, notes) => {
-        if (!(this.projects.some(project => project.name === name))) {
+        if (!(this.projects.some(project => project.name === name && project.folder === this.folderName))) {
             const project = new Project(this.folderName, name, priority, due, notes);
             this.projects.push(project);
             this.sortProjects();
@@ -154,7 +157,7 @@ const Folder = class {
             const projectFolder = folders.find(folder => folder.folderName === project.folder);
             const projectIndex = projectFolder.projects.findIndex(child => child === project);
             projectFolder.projects.splice(projectIndex, 1);
-        } else {
+        } else if (this.folderName !== "Inbox") {
             const InboxIndex = inbox.projects.findIndex(child => child === project);
             inbox.projects.splice(InboxIndex, 1);
         }
@@ -171,6 +174,7 @@ const Folder = class {
     }
 }
 
+// This function contains the assets to restore task methods to the retrieved object string from local storage which removes all methods within the object;
 const restoreTaskFunctions = (taskReference) => {
     const taskFunctions = {
         "toggleStatus" : () => {
@@ -181,7 +185,7 @@ const restoreTaskFunctions = (taskReference) => {
             switch (true) {
                 case (taskReference.status === true):
                     return "You may not edit a completed task.";
-                case (!(parent.tasks.some(task => task.name === name && task !== taskReference))):
+                case (!(parent.tasks.some(task => task.name === name && task.folder === taskReference.folder && task !== taskReference))):
                     taskReference.name = name;
                     taskReference.priority = priority;
                     taskReference.due = due;
@@ -205,6 +209,7 @@ const restoreTaskFunctions = (taskReference) => {
     Object.assign(taskReference, taskFunctions);
 }
 
+// This function contains the assets to restore project methods to the retrieved object string from local storage which removes all methods within the object;
 const restoreProjectFunctions = (projectReference) => {
     const projectFunctions = {
         "toggleStatus" : () => {
@@ -220,7 +225,7 @@ const restoreProjectFunctions = (projectReference) => {
             switch (true) {
                 case (projectReference.status === true):
                     return "You may not edit a completed project.";
-                case (!(folder.projects.some(project => project.name === name && project !== projectReference))):
+                case (!(folder.projects.some(project => project.name === name && project.folder === projectReference.folder && project !== projectReference))):
                     projectReference.name = name;
                     projectReference.priority = priority;
                     projectReference.due = due;
@@ -261,10 +266,12 @@ const restoreProjectFunctions = (projectReference) => {
     Object.assign(projectReference, projectFunctions);
 }
 
+
+// This function contains the assets to restore folder methods to the retrieved object string from local storage which removes all methods within the object;
 const restoreFolderFunctions = (folderReference) => {
     const folderFunctions = {
         "addTask" : (name, priority, due, notes) => {
-            if (!(folderReference.tasks.some(task => task.name === name))) {
+            if (!(folderReference.tasks.some(task => task.name === name && task.folder === folderReference.folderName))) {
                 const task = new Task(folderReference.folderName, name, priority, due, notes);
                 folderReference.tasks.push(task);
                 folderReference.sortTasks();
@@ -283,7 +290,7 @@ const restoreFolderFunctions = (folderReference) => {
                 const taskFolder = folders.find(folder => folder.folderName === task.folder);
                 const taskIndex = taskFolder.tasks.findIndex(child => child === task);
                 taskFolder.tasks.splice(taskIndex, 1);
-            } else {
+            } else if (folderReference.folderName !== "Inbox") {
                 const InboxIndex = inbox.tasks.findIndex(child => child === task);
                 inbox.tasks.splice(InboxIndex, 1);
             }
@@ -291,7 +298,7 @@ const restoreFolderFunctions = (folderReference) => {
             saveToStorage();
         },
         "addProject" : (name, priority, due, notes) => {
-            if (!(folderReference.projects.some(project => project.name === name))) {
+            if (!(folderReference.projects.some(project => project.name === name && project.folder === folderReference.folderName))) {
                 const project = new Project(folderReference.folderName, name, priority, due, notes);
                 folderReference.projects.push(project);
                 folderReference.sortProjects();
@@ -310,7 +317,7 @@ const restoreFolderFunctions = (folderReference) => {
                 const projectFolder = folders.find(folder => folder.folderName === project.folder);
                 const projectIndex = projectFolder.projects.findIndex(child => child === project);
                 projectFolder.projects.splice(projectIndex, 1);
-            } else {
+            } else if (folderReference.folderName !== "Inbox") {
                 const InboxIndex = inbox.projects.findIndex(child => child === project);
                 inbox.projects.splice(InboxIndex, 1);
             }
@@ -328,21 +335,26 @@ const restoreFolderFunctions = (folderReference) => {
     }
     Object.assign(folderReference, folderFunctions);
 }
+// Each restore function simulates the concept of composition, I should have used factory functions instead of classes;
 
+
+// Initialize folders;
 let folders = [new Folder("Inbox"), new Folder("Work"), new Folder("Personal")];
-let [inbox] = folders;   
+let [inbox] = folders; 
 
+// Using dependency injection to save changes to local storage, if local storage is available;
 const saveToStorage = () => {
-    if ("localStorage" in window) localStorage.setItem("folders", JSON.stringify(folders));
+    if ("localStorage" in window) localStorage.setItem("folders", JSON.stringify(folders)); // Using JSON to store a string in local storage;
 }  
 
+// This function checks if there is data saved in local storage to be retrieved, or else it returns newly created folders;
 const getFolders = () => {
     if ("localStorage" in window) {
         if ("folders" in localStorage) {
-            const storage = JSON.parse(localStorage["folders"]);
+            const storage = JSON.parse(localStorage["folders"]); // Using JSON to retrieve and convert a string from local storage back into an object;
             storage.forEach(folder => {
                 restoreFolderFunctions(folder);
-                folder.tasks.forEach(task => restoreTaskFunctions(task));
+                folder.tasks.forEach(task => restoreTaskFunctions(task)); 
                 folder.projects.forEach(project => {
                     restoreProjectFunctions(project);
                     project.tasks.forEach(task => restoreTaskFunctions(task));
@@ -368,6 +380,7 @@ const getFolders = () => {
         } 
     }
     return folders;
-}
+}  
 
+// This function is exported to get the folder objects in which data is, or will be, stored in.
 export {getFolders};
