@@ -62,10 +62,14 @@ nav {
     background-color: var(--color-two);
 }
 
-nav button {
+button {
     outline: none;
     appearance: none;
     border: none;
+    color: var(--color-one);
+}
+
+nav button {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -100,12 +104,6 @@ nav button:hover {
 
 h2 {
     font-size: 2.4rem;
-}
-
-button {
-    outline: none;
-    appearance: none;
-    border: none;
 }
 
 .new-item {
